@@ -3,13 +3,7 @@ const bcrypt = require("bcryptjs")
 const user_model = require("../models/user.model")
 const jwt = require("jsonwebtoken")
 const dotenv = require('dotenv');
-const nodemailer = require('nodemailer');
 dotenv.config();
-
-//verify email is in progress
-//invalid login credential
-
-
 
 exports.signup = async (req , res)=>{
     const request_body = req.body
@@ -32,7 +26,10 @@ exports.signup = async (req , res)=>{
             updatedAt : user.updatedAt
         }
         
-        res.status(200).send(res_user);
+        res.status(200).send({
+            userDetails : res_user,
+            message : "User is registered successfully. Check your email for verification"
+        });
     }catch(err) {
         console.log("Error while registering the user" , err)
         res.status(500).send({
@@ -57,7 +54,7 @@ exports.signin = async (req , res)=>{
 
 exports.deleteUser = async (req, res) => {
     try {
-        const user = await user_model.findOneAndDelete({ userId: req.body.userId });
+        const user = await user_model.findOneAndDelete({ userId: req.userId });
         if (!user) {
             return res.status(404).send({
                 message: "User not found"
@@ -72,4 +69,42 @@ exports.deleteUser = async (req, res) => {
             message : "Ther was problem in deleting the user"
         })
     }
+}
+
+exports.verifyEmailLink = async (req, res) => {
+    const token = req.query.token;
+    if (!token) {
+        return res.status(403).send({
+            message: "No token found : Unauthorized"
+        })
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
+        if (err) {
+            return res.status(401).send({
+                html : `<h2>Hello ${user.name} Your email verification link is invalid or expired</h2>
+                
+                        <p>Login and resend link again</p>`,
+                message: "Link is expired or invalid! Press below to resend link"
+            })
+        }
+        const user = await user_model.findOne({ email: decoded.id })
+        user.isVerified = true
+        await user.save()
+        const htmlContent = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Email Verify</title>
+        </head>
+        <body>
+            <h1>Hello , ${user.name}</h1>
+            <p>Your email is verified succesfully. </p>
+        </body>
+        </html>
+    `;
+        res.status(200).send(htmlContent)
+    })
 }

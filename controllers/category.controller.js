@@ -6,13 +6,15 @@ exports.createNewCategory = async (req , res) =>{
 
     //Create the category object
     const cat_data = {
-        name : req.body.name ,
-        description : req.body.description
+        name : req.body.name 
     }
     try {
         //Insert into mongodb
         const category = await category_model.create(cat_data)
-        return res.status(201).send(category)
+        return res.status(201).send({
+            name : category.name ,
+            numberOfProducts : category.productNumber
+        })
     }catch(err) {
         console.log("error while creating category" , err)
         return res.status(500).send({
@@ -32,7 +34,7 @@ exports.getAllcatgories = async (req , res) =>{
         for (let index = 0; index < categories.length; index++) {
             cat.push({
                 name : categories[index].name ,
-                description : categories[index].description
+                numberOfProducts : categories[index].productNumber
             })
             
         }
@@ -46,12 +48,6 @@ exports.getAllcatgories = async (req , res) =>{
 
 exports.deleteCategory = async(req , res) =>{
     try {
-        const del = await category_model.findOne({name : req.body.name})
-        if(!del) {
-            return res.status(404).send({
-                message : "Data not found"
-            })
-        }
         await category_model.deleteOne({name : req.body.name})
         return res.status(204).send({
             message : "Category deleted" ,

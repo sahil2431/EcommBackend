@@ -8,9 +8,9 @@ const categorySchema = new mongoose.Schema({
         required : true ,
         unique : true ,
     } ,
-    description : {
-        type : String ,
-        required : true
+    productNumber : {
+        type : Number ,
+        default : 0
     }
 },{timestamps : true , versionKey : false})
 

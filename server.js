@@ -5,6 +5,8 @@ const bcrypt = require("bcryptjs")
 const dotenv = require('dotenv');
 dotenv.config();
 
+//Middleware for product and category
+
 const app = express()
 
 app.use(express.json())

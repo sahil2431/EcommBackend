@@ -69,7 +69,7 @@ exports.emailVerified = async (req, res , next) => {
                 message: "Failed! No user found"
             })
         }
-        if(user.isVerified) {
+        if(user.emailVerified) {
             return res.status(400).send(
                 `
         <!DOCTYPE html>
@@ -81,7 +81,7 @@ exports.emailVerified = async (req, res , next) => {
         </head>
         <body>
             <h1>Hello , ${user.name}</h1>
-            <p>Email is already verified </p>
+            <h3>Email is already verified </h3>
         </body>
         </html>
     `)

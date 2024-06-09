@@ -22,12 +22,24 @@ const userSchema = new mongoose.Schema({
         minLength : 10 ,
         unique : true
     },
+
+    mobile : {
+        type : String ,
+        required : true,
+        unique : true
+    },
     userType : {
         type : String,
         default : "CUSTOMER",
         enum : ["CUSTOMER" , "ADMIN"]
     } ,
-    isVerified : {
+    emailVerified : {
+        type : Boolean,
+        default :function() {
+            return this.userType == "ADMIN";
+        }
+    },
+    mobileVerified : {
         type : Boolean,
         default :function() {
             return this.userType == "ADMIN";

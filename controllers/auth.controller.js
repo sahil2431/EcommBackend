@@ -13,7 +13,8 @@ exports.signup = async (req , res)=>{
         userId : request_body.userId ,
         userType : request_body.userType,
         email : request_body.email ,
-        password : bcrypt.hashSync(request_body.password , 8)
+        password : bcrypt.hashSync(request_body.password , 8),
+        mobile : request_body.mobile
     }
     try{
         const user = await user_model.create(userObj)
@@ -89,7 +90,7 @@ exports.verifyEmailLink = async (req, res) => {
             })
         }
         const user = await user_model.findOne({ email: decoded.id })
-        user.isVerified = true
+        user.emailVerified = true
         await user.save()
         const htmlContent = `
         <!DOCTYPE html>
@@ -101,7 +102,7 @@ exports.verifyEmailLink = async (req, res) => {
         </head>
         <body>
             <h1>Hello , ${user.name}</h1>
-            <p>Your email is verified succesfully. </p>
+            <h3>Your email is verified succesfully. </h3>
         </body>
         </html>
     `;

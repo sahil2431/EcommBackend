@@ -6,26 +6,38 @@ dotenv.config();
 const verifySignUpBody = async (req, res, next) => {
     try {
         if (!req.body.name) {
-            res.status(400).send({
+            return res.status(400).send({
                 message: "Failed! NO name entered"
             })
         }
 
         if (!req.body.email) {
-            res.status(400).send({
+            return res.status(400).send({
                 message: "Failed! NO email entered"
+            })
+        }
+        if (!req.body.password) {
+            return res.status(400).send({
+                message: "Failed! NO password entered"
+            })
+        }
+
+        if(!req.body.mobile){
+            return res.status(400).send({
+                message: "Failed! NO mobile number entered"
             })
         }
 
         if (!req.body.userId) {
-            res.status(400).send({
+            return res.status(400).send({
                 message: "Failed! NO userId entered"
             })
         }
 
         const userId = await user_model.findOne({ userId: req.body.userId })
         const emailExists = await user_model.findOne({ email: req.body.email })
-        if (userId ||  emailExists) {
+        const mobileExists = await user_model.findOne({ mobile: req.body.mobile })
+        if (userId ||  emailExists || mobileExists) {
             return res.status(400).send({
                 message: "Failed! userId or email is already present"
             })
@@ -35,7 +47,7 @@ const verifySignUpBody = async (req, res, next) => {
 
     } catch (err) {
         console.log("error while validating", err)
-        res.status(500).send({
+        return res.status(500).send({
 
             message: "Server Error"
         })

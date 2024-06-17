@@ -7,12 +7,15 @@ exports.create_product = async (req , res) =>{
         name : req.body.name ,
         price : req.body.price ,
         description : req.body.description ,
-        quantityAvailable : req.body.quantity ,
+        quantityAvailable : req.body.quantityAvailable ,
         category : req.body.category
     }
 
     try {
         const product = await product_model.create(prod_data)
+        const category = await categoryModel.findOne({name : req.body.category})
+        category.productNumber++
+        await category.save()
         return res.status(201).send(product)
     }catch(err) {
         console.log(err);
@@ -23,6 +26,11 @@ exports.create_product = async (req , res) =>{
 }
 
 exports.getAllProducts = async (req , res) =>{
+    if(!req.body.category) {
+        return res.status(404).send({
+            message : "Category is required"
+        })
+    }
     try {
         const category = await categoryModel.findOne({name : req.body.category})
         if(!category) {
@@ -58,6 +66,11 @@ exports.getAllProducts = async (req , res) =>{
 }
 
 exports.deleteProduct = async (req , res) =>{
+    if(!req.body.name) {
+        return res.status(404).send({
+            message : "Name is required"
+        })
+    }
     try {
         const del = await product_model.findOne({name : req.body.name})
         if(!del) {
@@ -66,6 +79,9 @@ exports.deleteProduct = async (req , res) =>{
             })
         }
 
+        const category = await categoryModel.findOne({name : del.category})
+        category.productNumber--;
+        await category.save()
         await product_model.deleteOne({name : req.body.name})
         return res.status(202).send({
             message : "Product deleted succesfully" ,

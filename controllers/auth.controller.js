@@ -43,7 +43,7 @@ exports.signin = async (req , res)=>{
     const user = await user_model.findOne({userId : req.body.userId})
 
     const token = jwt.sign({id : user.userId} , process.env.JWT_SECRET , {
-        expiresIn : 120
+        expiresIn : 1200
     })
     res.status(200).send({
         name : user.name ,

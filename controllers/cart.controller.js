@@ -20,16 +20,8 @@ async function cartValue(id) {
 
 exports.addCart = async (req, res) => {
     try {
-        const product = await productModel.findOne({ _id: req.body.productId, quantityAvailable : {$gt : 0} })
-        if (!product) {
-            return res.status(404).send({
-                message: "Product not found or Not available"
-            })
-        }
-
+        const product = req.product
         const price = req.body.quantity * product.price
-        product.quantityAvailable -= req.body.quantity
-        await product.save()
         await cartModel.findOne({ userId: req.userId, productId: req.body.productId }).then(async (item) => {
             if (item) {
                 item.quantity += req.body.quantity
@@ -107,6 +99,7 @@ exports.getCartItems = async (req , res) =>{
         let cartItem = []
         cart.forEach(element=>{
             cartItem.push({
+                name : element.productName ,
                 productId : element.productId ,
                 quantity : element.quantity ,
                 pricePerItem : element.price / element.quantity ,

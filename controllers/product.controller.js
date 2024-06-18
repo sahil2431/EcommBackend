@@ -98,3 +98,39 @@ exports.deleteProduct = async (req , res) =>{
         })
     }
 }
+
+exports.updateProduct = async (req , res) =>{
+    if(!req.body.name) {
+        return res.status(404).send({
+            message : "Name is required"
+        })
+    }
+    try {
+        const product = await product_model.findOne({name : req.body.name})
+        if(!product) {
+            return res.status(404).send({
+                message : "Product is not found"
+            })
+        }
+        if(req.body.price) {
+            product.price = req.body.price
+        }
+        if(req.body.quantityAvailable) {
+            product.quantityAvailable = req.body.quantityAvailable
+        }
+        await product.save()
+        return res.status(202).send({
+            message : "Product updated succesfully" ,
+            updatedProduct : {
+                name : product.name ,
+                price : product.price ,
+                quantityAvailable : product.quantityAvailable
+            }
+        })
+    }catch(err) {
+        console.log(err)
+        return res.status(500).send({
+            message : "Error while updating product"
+        })
+    }
+}

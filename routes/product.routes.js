@@ -7,4 +7,6 @@ module.exports = (app) => {
     app.get("/ecom/api/v1/getProducts/" , [authUser.verifyToken], product_controller.getAllProducts)
 
     app.delete("/ecom/api/v1/deleteProduct/" , [authUser.verifyToken, authUser.isAdmin] , product_controller.deleteProduct)
+
+    app.post("/ecom/api/v1/updateProduct/" , [authUser.verifyToken, authUser.isAdmin] , product_controller.updateProduct)
 }

@@ -1,13 +1,24 @@
 const express = require("express")
+const body_parser = require("body-parser")
 const mongoose = require("mongoose")
 const user_model = require("./models/user.model")
 const bcrypt = require("bcryptjs")
 const dotenv = require('dotenv');
+const cors = require("cors")  
+
+let gfs;
+
+
+
 dotenv.config();
+
+
 
 //Middleware for product and category
 
 const app = express()
+app.use(body_parser.json())
+app.use(cors())
 
 app.use(express.json())
 
@@ -59,6 +70,7 @@ require("./routes/auth.routes")(app)
 require("./routes/category.routes")(app)
 require("./routes/product.routes")(app)
 require("./routes/cart.routes")(app)
+require("./routes/order.routes")(app)
 
 const port = process.env.PORT
 app.listen(port , ()=>{

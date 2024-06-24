@@ -8,7 +8,8 @@ exports.create_product = async (req , res) =>{
         price : req.body.price ,
         description : req.body.description ,
         quantityAvailable : req.body.quantityAvailable ,
-        category : req.body.category
+        category : req.body.category , 
+        image : req.body.images
     }
 
     try {

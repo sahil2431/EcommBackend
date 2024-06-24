@@ -1,18 +1,33 @@
 const productModel = require("../models/product.model")
 const categoryModel = require("../models/category.model")
 const verifyProductBody = async (req, res, next) => {
+    console.log(req.body)
     const notPresent = [];
-    notPresent.push(!req.body.name)
-    notPresent.push(!req.body.price)
-    notPresent.push(!req.body.category)
-    notPresent.push(!req.body.quantityAvailable)
-    for(let i =0 ; i<notPresent.length; i++){
-        if(notPresent[i]){
-            return res.status(400).send({
-                message: "product body is not complete"
-            })
-        }
-    }
+    if (!req.body.name) {
+        notPresent.push('name');
+      }
+      if (!req.body.price) {
+        notPresent.push('price');
+      }
+      if (!req.body.category) {
+        notPresent.push('category');
+      }
+      if (!req.body.quantityAvailable) {
+        notPresent.push('quantityAvailable');
+      }
+
+      if(req.body.images.length < 1) {
+        notPresent.push("images")
+      }
+      
+    
+      // If any fields are missing, send a 400 response
+      if (notPresent.length > 0) {
+        return res.status(400).send({
+          message: `Missing required fields: ${notPresent.join(', ')}`
+        });
+      }
+
     const product = await productModel.findOne({ name: req.body.name })
     if (product) {
         return res.status(400).send({

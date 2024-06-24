@@ -25,7 +25,11 @@ const product_schema = new mongoose.Schema({
     quantityAvailable : {
         type : Number ,
         required : true
-    }
+    } ,
+
+    images : [{
+        type : String
+    }]
 }, {timestamps : true , versionKey : false})
 
 module.exports = mongoose.model("Product" , product_schema)

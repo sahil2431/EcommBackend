@@ -35,7 +35,7 @@ exports.sendVerificationEmail = async (req, res , next) => {
             from: process.env.SMTP_USER,
             to: req.body.email,
             subject: 'Verify your email',
-            text: `Please click on the following link to verify your email: http://localhost:${process.env.PORT}/ecom/api/v1/auth/verify?token=${token}
+            text: `Please click on the following link to verify your email: http://localhost:${process.env.FRONTEND_PORT}/verify?token=${token}
 
                                 The link will be valid for 1 hour.`
 
@@ -61,7 +61,7 @@ exports.sendVerificationEmail = async (req, res , next) => {
 
 exports.emailVerified = async (req, res , next) => {
     try {
-        const token = req.query.token
+        const token = req.body.token
         const decoded = jwt.verify(token, process.env.JWT_SECRET)
         const user = await user_model.findOne({email : decoded.id})
         if(!user) {
@@ -70,25 +70,13 @@ exports.emailVerified = async (req, res , next) => {
             })
         }
         if(user.emailVerified) {
-            return res.status(400).send(
-                `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Email Verify</title>
-        </head>
-        <body>
-            <h1>Hello , ${user.name}</h1>
-            <h3>Email is already verified </h3>
-        </body>
-        </html>
-    `)
+            return res.status(400).send({
+
+                message: "Email already verified"
+               })
         }
         else next();
     }catch(err) {
-        console.log(err)
         return res.status(400).send({
             message: "Failed! Error verifying email"
         })

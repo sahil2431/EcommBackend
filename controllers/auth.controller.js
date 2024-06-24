@@ -40,17 +40,25 @@ exports.signup = async (req , res)=>{
 }
 
 exports.signin = async (req , res)=>{
-    const user = await user_model.findOne({userId : req.body.userId})
-
-    const token = jwt.sign({id : user.userId} , process.env.JWT_SECRET , {
-        expiresIn : 1200
-    })
-    res.status(200).send({
-        name : user.name ,
-        userId : user.userId , 
-        email : user.email,
-        accessToken : token
-    })
+    try {
+        
+        const user = await user_model.findOne({userId : req.body.userId})
+    
+        const token = jwt.sign({id : user.userId} , process.env.JWT_SECRET , {
+            expiresIn : 1200
+        })
+        res.status(200).send({
+            name : user.name ,
+            userId : user.userId , 
+            email : user.email,
+            accessToken : token
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(500).send({
+            message : "Error while signing in"
+        })
+    }
 }
 
 exports.deleteUser = async (req, res) => {
@@ -73,7 +81,7 @@ exports.deleteUser = async (req, res) => {
 }
 
 exports.verifyEmailLink = async (req, res) => {
-    const token = req.query.token;
+    const token = req.body.token;
     if (!token) {
         return res.status(403).send({
             message: "No token found : Unauthorized"
@@ -83,29 +91,35 @@ exports.verifyEmailLink = async (req, res) => {
     jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
         if (err) {
             return res.status(401).send({
-                html : `<h2>Hello ${user.name} Your email verification link is invalid or expired</h2>
                 
-                        <p>Login and resend link again</p>`,
                 message: "Link is expired or invalid! Press below to resend link"
             })
         }
         const user = await user_model.findOne({ email: decoded.id })
         user.emailVerified = true
         await user.save()
-        const htmlContent = `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Email Verify</title>
-        </head>
-        <body>
-            <h1>Hello , ${user.name}</h1>
-            <h3>Your email is verified succesfully. </h3>
-        </body>
-        </html>
-    `;
-        res.status(200).send(htmlContent)
+        
+    res.status(200).send({
+        user : user.name,
+            message: "Email verified successfully"
+        })
     })
 }
+
+exports.isAdmin = (req, res, next) => {
+    const user = req.user
+    if (user && user.userType == "ADMIN") {
+        res.status(200).send({
+            admin : true,
+            message: "Admin user is authorized for this endpoint"
+        })
+    }
+    else {
+        admin = false;
+        return res.status(200).send({
+            admin : false,
+            message: "Only admin users are authorized for this endpoint"
+        })
+    }
+}
+        

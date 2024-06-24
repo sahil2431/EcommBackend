@@ -9,5 +9,7 @@ module.exports = (app) =>{
 
     app.delete("/ecom/api/v1/auth/delete/" , [authUser.verifyToken] , authControl.deleteUser)
 
-    app.get("/ecom/api/v1/auth/verify/" ,[verifyEmail.emailVerified] , authControl.verifyEmailLink)
+    app.post("/ecom/api/v1/auth/verify/" ,[verifyEmail.emailVerified] , authControl.verifyEmailLink)
+
+    app.post("/ecom/api/v1/auth/isAdmin" , [authUser.verifyToken] , authControl.isAdmin)
 }

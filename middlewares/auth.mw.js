@@ -39,7 +39,7 @@ const verifySignUpBody = async (req, res, next) => {
         const mobileExists = await user_model.findOne({ mobile: req.body.mobile })
         if (userId ||  emailExists || mobileExists) {
             return res.status(400).send({
-                message: "Failed! userId or email is already present"
+                message: "Failed! userId or email or mobile number is already present"
             })
         }
         next()
@@ -57,7 +57,7 @@ const verifySignUpBody = async (req, res, next) => {
 const verifySignInBody = async (req, res, next) => {
     if (!req.body.userId) {
         return res.status(400).send({
-            message: "user id is not provided"
+            message: "User id is not provided"
         })
     }
     if (!req.body.password) {
@@ -81,8 +81,7 @@ const verifySignInBody = async (req, res, next) => {
 }
 
 const verifyToken = (req, res, next) => {
-    const token = req.headers["access-token"]
-
+    const token = req.headers["accesstoken"]
     if (!token) {
         return res.status(403).send({
             message: "No token found : Unauthorized"
@@ -112,7 +111,6 @@ const verifyToken = (req, res, next) => {
 }
 
 const isAdmin = (req, res, next) => {
-
     const user = req.user
     if (user && user.userType == "ADMIN") {
         next()

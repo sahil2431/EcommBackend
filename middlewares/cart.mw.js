@@ -1,7 +1,8 @@
 const cartModel = require("../models/cart.model")
 const productModel = require("../models/product.model")
 const {ApiError} = require("../utils/ApiError");
-const verifyCartBody = async (req, res, next) => {
+const { asyncHandler } = require("../utils/asyncHandler");
+const verifyCartBody = asyncHandler( async (req, res, next) => {
     const {productId, quantity } = req.body;
 
     if (!productId) {
@@ -21,7 +22,7 @@ const verifyCartBody = async (req, res, next) => {
     req.product = product
     next()
 
-}
+})
 
 module.exports = {
     verifyCartBody

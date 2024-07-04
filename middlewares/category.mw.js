@@ -1,7 +1,8 @@
 const { ApiError } = require("../utils/ApiError");
-const categoryModel = require("../models/category.model")
+const categoryModel = require("../models/category.model");
+const { asyncHandler } = require("../utils/asyncHandler");
 
-const verifyCategoryBody =  async(req , res , next) =>{
+const verifyCategoryBody =asyncHandler(  async(req , res , next) =>{
     if(!req.body.name) {
         throw new ApiError(400, "category name is not provided")
     }
@@ -10,9 +11,9 @@ const verifyCategoryBody =  async(req , res , next) =>{
         throw new ApiError(400, "category already exists")
     }
     next()
-}
+})
 
-const verifyCategoryDeleteBody = async(req , res , next) =>{
+const verifyCategoryDeleteBody =asyncHandler( async(req , res , next) =>{
     if(!req.body.name) {
         throw new ApiError(400, "category name is not provided")
     }
@@ -22,7 +23,7 @@ const verifyCategoryDeleteBody = async(req , res , next) =>{
         
     }
     next()
-}
+})
 module.exports = {
     verifyCategoryBody,
     verifyCategoryDeleteBody

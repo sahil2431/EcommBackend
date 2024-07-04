@@ -2,8 +2,9 @@ const user_model = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const { ApiError } = require("../utils/ApiError");
+const { asyncHandler } = require("../utils/asyncHandler");
 dotenv.config();
-const verifySignUpBody = async (req, res, next) => {
+const verifySignUpBody =asyncHandler( async (req, res, next) => {
   try {
     const { name, email, userId, password, mobile } = req.body;
 
@@ -28,9 +29,9 @@ const verifySignUpBody = async (req, res, next) => {
     console.log(error);
     next(error);
   }
-};
+});
 
-const verifySignInBody = async (req, res, next) => {
+const verifySignInBody =asyncHandler( async (req, res, next) => {
   const { userId, email, password } = req.body;
   if (!userId && !email) {
     throw new ApiError(400, "User id or email is required");
@@ -47,9 +48,9 @@ const verifySignInBody = async (req, res, next) => {
     throw new ApiError(401, "Incorrect password");
   }
   next();
-};
+});
 
-const verifyToken = async (req, res, next) => {
+const verifyToken =asyncHandler( async (req, res, next) => {
   try {
     const accessToken =
       req.cookies?.accessToken ||
@@ -74,19 +75,19 @@ const verifyToken = async (req, res, next) => {
   } catch (error) {
     throw new ApiError(401, error?.message || "Invalid token");
   }
-};
+});
 
-const isAdmin = (req, res, next) => {
+const isAdmin =asyncHandler( (req, res, next) => {
   const user = req.user;
   if (user && user.userType == "ADMIN") {
     next();
   } else {
     throw new ApiError(403, "Forbidden");
   }
-};
+});
 
 
-const isEmailVerified = async (req, res , next) => {
+const isEmailVerified =asyncHandler( async (req, res , next) => {
   try {
       const token = req.body.token
       const decoded = jwt.verify(token, process.env.JWT_SECRET)
@@ -104,7 +105,7 @@ const isEmailVerified = async (req, res , next) => {
   }
           
 
-}
+})
 
 module.exports = {
   verifySignUpBody: verifySignUpBody,

@@ -1,7 +1,8 @@
 const orderModels = require("../models/order.model")
 const cartModels = require("../models/cart.model")
 const {ApiError} = require("../utils/ApiError");
-const verifyOrderBody = async (req, res, next) => {
+const { asyncHandler } = require("../utils/asyncHandler");
+const verifyOrderBody =asyncHandler( async (req, res, next) => {
     if (!req.body.address) {
         const order = await orderModels.findOne({ userId: req.userId })
         if (order) {
@@ -32,7 +33,7 @@ const verifyOrderBody = async (req, res, next) => {
         throw new ApiError(500 ,"Error while fwtching cart" , ApiError.message)
     }
 
-}
+})
 
 module.exports = {
     verifyOrderBody

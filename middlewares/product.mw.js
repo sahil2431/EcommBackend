@@ -1,8 +1,9 @@
 const productModel = require("../models/product.model")
 const categoryModel = require("../models/category.model")
 const {ApiError} = require("../utils/ApiError");
+const { asyncHandler } = require("../utils/asyncHandler");
 
-const verifyProductBody = async (req, res, next) => {
+const verifyProductBody =asyncHandler( async (req, res, next) => {
     const { name, price, category , quantityAvailable } = req.body; 
     if (
       [name, price , category , quantityAvailable].some(
@@ -25,7 +26,7 @@ const verifyProductBody = async (req, res, next) => {
     }  
     next()
 
-}
+})
 
 
 module.exports = {

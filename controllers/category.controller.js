@@ -1,3 +1,5 @@
+const { ApiError } = require("../utils/ApiError");
+const { ApiResponse } = require("../utils/ApiResponse");
 const category_model = require("../models/category.model")
 
 exports.createNewCategory = async (req , res) =>{
@@ -11,15 +13,13 @@ exports.createNewCategory = async (req , res) =>{
     try {
         //Insert into mongodb
         const category = await category_model.create(cat_data)
-        return res.status(201).send({
-            name : category.name ,
-            numberOfProducts : category.productNumber
-        })
+        return res.status(201).send(new ApiResponse(201, "Category created successfully", {
+            name: category.name,
+            numberOfProducts: category.productNumber
+        }))
     }catch(err) {
         console.log("error while creating category" , err)
-        return res.status(500).send({
-            message : "error while creating category"
-        })
+        throw new ApiError(500, "Error while creating category");
     }
 
 
@@ -38,24 +38,20 @@ exports.getAllcatgories = async (req , res) =>{
             })
             
         }
-        return res.status(200).send(cat)
+        return res.status(200).send(
+            new ApiResponse(200, "Categories fetched successfully", cat)
+        )
     }catch (err) {
-        return res.status(500).send({
-            message : "Error While fetching category"
-        })
+        throw new ApiError(500, "Error while fetching categories" , err);
     }
 }
 
 exports.deleteCategory = async(req , res) =>{
     try {
         await category_model.deleteOne({name : req.body.name})
-        return res.status(204).send({
-            message : "Category deleted" ,
-            
-        }); 
+        return res.status(204).send(new ApiResponse(204, "Category deleted successfully")
+    ); 
     }catch(err) {
-        return res.status(500).send({
-            message : "Error while deleting the data"
-        })
+        throw new ApiError(500, "Error while deleting the category" , err);
     }
 }

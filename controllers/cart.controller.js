@@ -1,3 +1,5 @@
+const { ApiError } = require("../utils/ApiError");
+const { ApiResponse } = require("../utils/ApiResponse");
 const cartModel = require("../models/cart.model")
 const productModel = require("../models/product.model")
 
@@ -12,9 +14,7 @@ async function cartValue(id) {
 
         return cartPrice
     } catch (err) {
-        return res.status(500).send({
-            message: "Error while fetching price "
-        })
+        throw new ApiError(500, "Error while fetching cart value" , err);   
     }
 }
 
@@ -27,15 +27,9 @@ exports.addCart = async (req, res) => {
                 item.quantity += req.body.quantity
                 item.price += price
                 await item.save()
-                return res.status(200).send({
-                    userId: req.userId,
-                    productName : item.productName,
-                    productId: item.productId,
-                    quantity: item.quantity,
-                    price: item.price,
-
-                    cartValue: await cartValue(req.userId)
-                })
+                return res.status(200).send(
+                    new ApiResponse(200, "Cart updated successfully", item)
+                )
             }
             else {
                 const cartData = {
@@ -46,24 +40,15 @@ exports.addCart = async (req, res) => {
                     price: (req.body.quantity * product.price)
                 }
                 const cart = await cartModel.create(cartData)
-                return res.status(200).send({
-                    userId: req.userId,
-                    productId: cart.productId,
-                    productName : cart.productName ,
-                    quantity: cart.quantity,
-                    price: cart.price,
-
-                    cartValue: await cartValue(req.userId)
-                })
+                return res.status(200).send(
+                    new ApiResponse(200, "Cart added successfully", cart)
+                )
 
             }
         })
 
     } catch (err) {
-        console.log(err)
-        return res.status(500).send({
-            message: "Error While adding item to cart"
-        })
+        throw new ApiError(500, "Error while creating the data" , err);
     }
 }
 
@@ -71,19 +56,14 @@ exports.clearCart = async (req, res) => {
     try {
         const cart = await cartModel.find({ userId: req.userId })
         if (cart.length == 0) {
-            return res.status(404).send({
-                message: "There are no elements in the cart"
-            })
+            throw new ApiError(404, "Cart is empty" , err);
         }
         await cartModel.deleteMany({ userId: req.userId })
-        return res.status(200).send({
-            message: "Cart cleared succesfully"
-        })
+        return res.status(200).json(
+            new ApiResponse(200, "Cart cleared successfully")
+        )
     } catch (error) {
-        console.log(error)
-        return res.status(500).send({
-            message: "Error while creating the data"
-        })
+        throw new ApiError(500, "Error while clearing cart" , err);
     }
 }
 
@@ -91,9 +71,7 @@ exports.getCartItems = async (req , res) =>{
     try {
         const cart = await cartModel.find({ userId: req.userId })
         if (cart.length == 0) {
-            return res.status(404).send({
-                message: "There are no elements in the cart"
-            })
+            throw new ApiError(404, "Cart is empty" , err);
         }
 
         let cartItem = []
@@ -106,16 +84,11 @@ exports.getCartItems = async (req , res) =>{
                 totalPrice : element.price ,
             })
         })
-
-        return res.status(200).send({
-            userId : req.userId ,
-            cartDetails : cartItem ,
-            cartValue : await cartValue(req.userId)
-        })
+        const cartValue = await cartValue(req.userId)
+        return res.status(200).json(
+            new ApiResponse(200, "Cart fetched successfully", {cartItem , cartValue})
+        )
     } catch (error) {
-        console.log(error)
-        res.status(500).send({
-            message : "Error while getting the elements of cart"
-        })
+        throw new ApiError(500, "Error while fetching cart items" , err);
     }
 }

@@ -1,3 +1,5 @@
+const { ApiError } = require("../utils/ApiError");
+const { ApiResponse } = require("../utils/ApiResponse");
 const orderModel = require("../models/order.model")
 const productModel = require("../models/product.model")
 const cartModel = require("../models/cart.model")
@@ -21,13 +23,10 @@ exports.confirmOrder = async(req , res)=>{
         }
         const order = await orderModel.create(orderDetails)
         await cartModel.deleteMany({userId : req.userId})
-        res.status(200).send({
-            message : "Order placed succesfully"
-        })
+        res.status(200).send(
+            new ApiResponse(200, "Order placed successfully", order)
+        )
     }catch(err) {
-        console.log("Error while placing the order" , err)
-        return res.status(500).send({
-            message : "Error while placing the order"
-        })
+        throw new ApiError(500, "Error while placing order" , err); 
     }
 }

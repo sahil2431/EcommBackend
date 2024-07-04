@@ -1,12 +1,35 @@
+const {Router} = require("express")
 const product_controller = require("../controllers/product.controller")
-const authUser = require("../middlewares/auth.mw")
+const authUser = require("../middlewares/user.mw")
 const productMW = require("../middlewares/product.mw")
+const multerMW = require("../middlewares/multer.mw")
 
-module.exports = (app) => {
-    app.post("/ecom/api/v1/createProduct/" , [authUser.verifyToken ,authUser.isAdmin , productMW.verifyProductBody] , product_controller.create_product)
-    app.get("/ecom/api/v1/getProducts/" , [authUser.verifyToken], product_controller.getAllProducts)
 
-    app.delete("/ecom/api/v1/deleteProduct/" , [authUser.verifyToken, authUser.isAdmin] , product_controller.deleteProduct)
+const router = Router()
+router.route("/create").post(
+    multerMW.upload.array("file"),
+    authUser.verifyToken,
+    authUser.isAdmin,
+    productMW.verifyProductBody,
+    product_controller.create_product
+)
 
-    app.post("/ecom/api/v1/updateProduct/" , [authUser.verifyToken, authUser.isAdmin] , product_controller.updateProduct)
-}
+router.route("/get").get(
+    authUser.verifyToken,
+    product_controller.getAllProducts
+)
+
+router.route("/delete").delete(
+    authUser.verifyToken,
+    authUser.isAdmin,
+    productMW.verifyProductBody,
+    product_controller.deleteProduct
+)
+
+router.route("/update").patch(
+    authUser.verifyToken,
+    authUser.isAdmin,
+    product_controller.updateProduct
+)
+
+module.exports = router;

@@ -1,27 +1,21 @@
 const cartModel = require("../models/cart.model")
 const productModel = require("../models/product.model")
+const {ApiError} = require("../utils/ApiError");
 const verifyCartBody = async (req, res, next) => {
+    const {productId, quantity } = req.body;
 
-    if (!req.body.productId) {
-        return res.status(400).send({
-            message: "Failed! NO productId entered"
-        })
+    if (!productId) {
+        throw new ApiError(400, "Failed! NO productId entered")
     }
-    if (!req.body.quantity) {
-        return res.status(400).send({
-            message: "Failed! NO quantity entered"
-        })
+    if (!quantity) {
+        throw new ApiError(400, "Failed! NO quantity entered")
     }
     const product = await productModel.findOne({ _id: req.body.productId, quantityAvailable: { $gt: 0 } })
     if (!product) {
-        return res.status(404).send({
-            message: "Product not found or Not available"
-        })
+        throw new ApiError(400, "Failed! Product not found or not available")
     }
     if (product.quantityAvailable < req.body.quantity) {
-        return res.status(400).send({
-            message: "Failed! quantity is greater than available quantity"
-        })
+        throw new ApiError(400, "Failed! Quantity is not available")
     }
 
     req.product = product

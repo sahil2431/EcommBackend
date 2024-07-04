@@ -1,13 +1,28 @@
+const {Router} = require("express")
 const category_controller = require("../controllers/category.controller")
-const authUser = require("../middlewares/auth.mw")
+const authUser = require("../middlewares/user.mw")
 const categoryMW = require("../middlewares/category.mw")
-module.exports = (app) =>{
-    
-    app.post("/ecom/api/v1/categories" ,[authUser.verifyToken , authUser.isAdmin , categoryMW.verifyCategoryBody] , category_controller.createNewCategory)
 
-    app.get("/ecom/api/v1/getcategories",[authUser.verifyToken] , category_controller.getAllcatgories)
+const router = Router()
 
-    app.delete("/ecom/api/v1/deleteCategory" ,[authUser.verifyToken , authUser.isAdmin , categoryMW.verifyCategoryDeleteBody] , category_controller.deleteCategory)
+router.route("/create").post(
+    authUser.verifyToken,
+    authUser.isAdmin,
+    categoryMW.verifyCategoryBody,
+    category_controller.createNewCategory
+)
 
-    
-}
+router.route("/get").get(
+    authUser.verifyToken,
+    category_controller.getAllcatgories
+)
+
+router.route("/delete").delete(
+    authUser.verifyToken,
+    authUser.isAdmin,
+    categoryMW.verifyCategoryDeleteBody,
+    category_controller.deleteCategory
+)
+
+
+module.exports = router

@@ -1,8 +1,23 @@
+const {Router} = require("express")
 const cartController = require("../controllers/cart.controller")
-const authMw = require("../middlewares/auth.mw")
+const authMw = require("../middlewares/user.mw")
 const cartMW = require("../middlewares/cart.mw")
-module.exports = (app) =>{
-    app.post("/ecom/api/v1/auth/cart/add" ,[authMw.verifyToken , cartMW.verifyCartBody] , cartController.addCart )
-    app.post("/ecom/api/v1/auth/cart/clear" , [authMw.verifyToken] , cartController.clearCart)
-    app.get("/ecom/api/v1/auth/cart" , [authMw.verifyToken] , cartController.getCartItems)
-}
+
+const router = Router() 
+router.route("/add").post(
+    authMw.verifyToken,
+    cartMW.verifyCartBody,
+    cartController.addCart
+)
+
+router.route("/clear").delete(
+    authMw.verifyToken,
+    cartController.clearCart
+)
+
+router.route("/get").get(
+    authMw.verifyToken,
+    cartController.getCartItems
+)
+
+module.exports = router;

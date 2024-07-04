@@ -1,5 +1,6 @@
 const orderModels = require("../models/order.model")
 const cartModels = require("../models/cart.model")
+const {ApiError} = require("../utils/ApiError");
 const verifyOrderBody = async (req, res, next) => {
     if (!req.body.address) {
         const order = await orderModels.findOne({ userId: req.userId })
@@ -7,17 +8,13 @@ const verifyOrderBody = async (req, res, next) => {
             req.body.address = order.address
         }
         else {
-            return res.status(400).send({
-                message: "Enter address first"
-            })
+            throw new ApiError(400 , "Address is required")
         }
     }
     try {
         const cartData = await cartModels.find({ userId: req.userId })
         if (cartData.length == 0) {
-            return res.status(400).send({
-                message: "Cart is empty"
-            })
+            throw new ApiError(400 , "Cart is empty")
         }
         req.body.productId = []
         req.body.quantity = []
@@ -32,9 +29,7 @@ const verifyOrderBody = async (req, res, next) => {
         next()
 
     } catch (error) {
-        return res.status(500).send({
-            message: "Error while fetching cart data"
-        })
+        throw new ApiError(500 ,"Error while fwtching cart" , ApiError.message)
     }
 
 }

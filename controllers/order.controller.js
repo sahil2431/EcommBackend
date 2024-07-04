@@ -3,7 +3,8 @@ const { ApiResponse } = require("../utils/ApiResponse");
 const orderModel = require("../models/order.model")
 const productModel = require("../models/product.model")
 const cartModel = require("../models/cart.model")
-exports.confirmOrder = async(req , res)=>{
+const { asyncHandler } = require("../utils/asyncHandler");
+const confirmOrder = asyncHandler( async(req , res)=>{
     const orderDetails  = {
         userId : req.userId,
         address : req.body.address,
@@ -29,4 +30,8 @@ exports.confirmOrder = async(req , res)=>{
     }catch(err) {
         throw new ApiError(500, "Error while placing order" , err); 
     }
+})
+
+module.exports = {
+    confirmOrder
 }

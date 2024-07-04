@@ -3,7 +3,8 @@ const { ApiResponse } = require("../utils/ApiResponse");
 const categoryModel = require("../models/category.model");
 const product_model = require("../models/product.model");
 const uploadOncloudinary = require("../utils/cloudinary");
-exports.create_product = async (req, res) => {
+const { asyncHandler } = require("../utils/asyncHandler");
+const create_product = asyncHandler(async (req, res) => {
   let imagePath = [];
   console.log(file);
   for (let i = 0; i < file.length(); i++) {
@@ -37,9 +38,9 @@ exports.create_product = async (req, res) => {
     console.log(err);
     throw new ApiError(500, "Error while creating product", err);
   }
-};
+});
 
-exports.getAllProducts = async (req, res) => {
+const getAllProducts = asyncHandler(async (req, res) => {
   if (!req.body.category) {
     throw new ApiError(404, "Category is required", err);
   }
@@ -72,9 +73,9 @@ exports.getAllProducts = async (req, res) => {
     console.log(err);
     throw new ApiError(500, "Error while fetching products", err);
   }
-};
+});
 
-exports.deleteProduct = async (req, res) => {
+const deleteProduct = asyncHandler(async (req, res) => {
   if (!req.body.name) {
     throw new ApiError(404, "Product name is required", err);
   }
@@ -97,9 +98,9 @@ exports.deleteProduct = async (req, res) => {
     console.log(err);
     throw new ApiError(500, "Error while deleting product", err);
   }
-};
+});
 
-exports.updateProduct = async (req, res) => {
+const updateProduct = asyncHandler(async (req, res) => {
   if (!req.body.name) {
     throw new ApiError(404, "Product name is required", err);
   }
@@ -125,4 +126,11 @@ exports.updateProduct = async (req, res) => {
   } catch (err) {
     throw new ApiError(500, "Error while updating product", err);
   }
+});
+
+module.exports = {
+  create_product,
+  getAllProducts,
+  deleteProduct,
+  updateProduct,
 };

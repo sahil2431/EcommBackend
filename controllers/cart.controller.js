@@ -1,7 +1,8 @@
 const { ApiError } = require("../utils/ApiError");
 const { ApiResponse } = require("../utils/ApiResponse");
 const cartModel = require("../models/cart.model")
-const productModel = require("../models/product.model")
+const productModel = require("../models/product.model");
+const { asyncHandler } = require("../utils/asyncHandler");
 
 async function cartValue(id) {
     try {
@@ -17,8 +18,7 @@ async function cartValue(id) {
         throw new ApiError(500, "Error while fetching cart value" , err);   
     }
 }
-
-exports.addCart = async (req, res) => {
+const addCart = asyncHandler( async (req, res) => {
     try {
         const product = req.product
         const price = req.body.quantity * product.price
@@ -50,9 +50,9 @@ exports.addCart = async (req, res) => {
     } catch (err) {
         throw new ApiError(500, "Error while creating the data" , err);
     }
-}
+})
 
-exports.clearCart = async (req, res) => {
+const clearCart = asyncHandler( async (req, res) => {
     try {
         const cart = await cartModel.find({ userId: req.userId })
         if (cart.length == 0) {
@@ -65,9 +65,9 @@ exports.clearCart = async (req, res) => {
     } catch (error) {
         throw new ApiError(500, "Error while clearing cart" , err);
     }
-}
+})
 
-exports.getCartItems = async (req , res) =>{
+const getCartItems = asyncHandler( async (req , res) =>{
     try {
         const cart = await cartModel.find({ userId: req.userId })
         if (cart.length == 0) {
@@ -91,4 +91,10 @@ exports.getCartItems = async (req , res) =>{
     } catch (error) {
         throw new ApiError(500, "Error while fetching cart items" , err);
     }
+})
+
+module.exports = {
+    addCart,
+    clearCart,
+    getCartItems
 }

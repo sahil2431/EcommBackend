@@ -3,7 +3,8 @@ const { ApiResponse } = require("../utils/ApiResponse");
 const user_model = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 const {sendVerificationEmail} = require("../utils/sendVerificationLink");
-const signup = async (req, res) => {
+const { asyncHandler } = require("../utils/asyncHandler");
+const signup = asyncHandler( async (req, res) => {
   const request_body = req.body;
 
   const userObj = {
@@ -28,11 +29,11 @@ const signup = async (req, res) => {
       .status(200)
       .send(new ApiResponse(200, "User Created successfully", createdUser));
   } catch (err) {
-    throw new ApiError(500, "Error while registering user", err);
+    throw new ApiError(500, err.message || "Error while registering user", err);
   }
-};
+});
 
-const signin = async (req, res) => {
+const signin = asyncHandler(async (req, res) => {
   try {
     const user = await user_model.findOne({ userId: req.body.userId });
 
@@ -64,13 +65,13 @@ const signin = async (req, res) => {
       );
   } catch (error) {
     console.log(error);
-    throw new ApiError(500, "Error while signing", error);
+    throw new ApiError(500, error.message || "Error while signing", error);
   }
-};
+});
 
-const deleteUser = async (req, res) => {
+const deleteUser = asyncHandler( async (req, res) => {
   try {
-    const user = await user_model.findOneAndDelete({ userId: req.userId });
+    const user = await user_model.findOneAndDelete({ _id: req.user._id });
     if (!user) {
       throw new ApiError(404, "User not found");
     }
@@ -80,56 +81,65 @@ const deleteUser = async (req, res) => {
       .clearCookie("refreshToken")
       .json(new ApiResponse(200, "User deleted successfully", user));
   } catch (err) {
-    throw new ApiError(500, "Error while deleting user", err);
+    throw new ApiError(err.status || 500, err.message || "Error while deleting user", err);
   }
-};
+});
 
-const verifyEmailLink = async (req, res) => {
-  console.log(req.body);
-  const token = req.body.token;
-  if (!token) {
-    throw new ApiError(400, "Token is not provided");
-  }
-  console.log(token);
-
-  jwt.verify(token, process.env.EMAIL_TOKEN_SECRET, async (err, decoded) => {
-    if (err) {
-      throw new ApiError(
-        401,
-        "Link is expired or invalid! Press below to resend link"
+const verifyEmailLink =asyncHandler( async (req, res) => {
+  try {
+    const token = req.body.token;
+    if (!token) {
+      throw new ApiError(400, "Token is not provided");
+    }
+    console.log(token);
+  
+    jwt.verify(token, process.env.EMAIL_TOKEN_SECRET, async (err, decoded) => {
+      if (err) {
+        throw new ApiError(
+          401,
+          "Link is expired or invalid! Press below to resend link"
+        );
+      }
+      const user = await user_model.findOne({ email: decoded.id });
+      user.emailVerified = true;
+      await user.save();
+  
+      return res.status(200).json(
+        new ApiResponse(200, "Email verified successfully", {
+          user: user.name,
+        })
       );
-    }
-    const user = await user_model.findOne({ email: decoded.id });
-    user.emailVerified = true;
-    await user.save();
+    });
+  } catch (error) {
+    throw new ApiError(500, error.message || "Error while verifying email", error);
+    
+  }
+});
 
-    return res.status(200).json(
-      new ApiResponse(200, "Email verified successfully", {
-        user: user.name,
-      })
-    );
-  });
-};
-
-const resendEmailVerificationLink = async (req, res) => {
- const user = await user_model.findOne({ email: req.body.email });
- if(!user){
-  throw new ApiError(404, "User not found")
+const resendEmailVerificationLink =asyncHandler( async (req, res) => {
+ try {
+  const user = await user_model.findOne({ email: req.body.email });
+  if(!user){
+   throw new ApiError(404, "User not found")
+  }
+  if(user.emailVerified){
+   throw new ApiError(400, "Email already verified")
+  }
+   const emailVerification = await sendVerificationEmail(req.body.email);
+     if(!emailVerification){
+       throw new ApiError(500, "Error while sending email")
+     }
+ 
+   return res
+   .status(200)
+   .json(new ApiResponse(200, "Email verification link sent successfully"));
+ } catch (error) {
+   throw new ApiError(500, error.message || "Error while sending email", error);
+  
  }
- if(user.emailVerified){
-  throw new ApiError(400, "Email already verified")
- }
-  const emailVerification = await sendVerificationEmail(req.body.email);
-    if(!emailVerification){
-      throw new ApiError(500, "Error while sending email")
-    }
+})
 
-  return res
-  .status(200)
-  .json(new ApiResponse(200, "Email verification link sent successfully"));
-}
-
-const refreshToken = async (req, res) => {
+const refreshToken =asyncHandler( async (req, res) => {
   try {
     const refreshToken = req.cookies?.refreshToken || req.body.refreshToken;
     if (!refreshToken) {
@@ -178,42 +188,68 @@ const refreshToken = async (req, res) => {
     );
     
   } catch (error) {
-    throw new ApiError(500, "Error while refreshing token", error);
+    throw new ApiError(500,error.message || "Error while refreshing token", error);
     
   }
-}
+})
 
-const updatePassword = async (req, res) => {
+const updatePassword =asyncHandler( async (req, res) => {
   const { oldPassword, newPassword } = req.body;
+  if(!oldPassword || !newPassword) {
+    throw new ApiError(400, "Old and new password are required");
+  }
   if(oldPassword === newPassword) {
     throw new ApiError(400, "New password cannot be same as old password");
   }
 
-  const user = await user_model.findById(req.user._id);
-  
-  user.password = newPassword;
-  await user.save( {validateBeforeSave : false})
-
-  return res
-  .status(200)
-  .json(new ApiResponse(200, "Password updated successfully"));
-
-}
-
-const updateUserDetails = async (req, res) => {
   try {
-    const { name, mobile , email } = req.body;
     const user = await user_model.findById(req.user._id);
+    if(!user.isPasswordCorrect(oldPassword)) {
+      throw new ApiError(400 , "Old password is not correct")
+    }
+    
+    user.password = newPassword;
+    await user.save( {validateBeforeSave : false})
+  
+    return res
+    .status(200)
+    .json(new ApiResponse(200, "Password updated successfully"));
+  } catch (error) {
+    throw new ApiError(500, error.message || "Error while updating password", error);
+    
+  }
+
+})
+
+const updateUserDetails =asyncHandler( async (req, res) => {
+  const { name, mobile , email } = req.body;
+
+  if(!name &&!mobile &&!email) {
+    throw new ApiError(400, "Atleast one field is required");
+  }
+  try {
+
+    const user = await user_model.findById(req.user._id);
+    console.log(req.body);
+
     if(!user){
-      throw new ApiError(404, "User not found");
+      throw new ApiError(404,  "User not found" );
     }
     if(name) {
       user.name = name;
     }
     if(mobile) {
+      const mobileExist = await user_model.findOne({ mobile });
+      if(mobileExist){
+        throw new ApiError(400, "Mobile number already exist" , error);
+      }
       user.mobile = mobile;
     }
     if(email) {
+      const emailExist = await user_model.findOne({ email });
+      if(emailExist){
+        throw new ApiError(400, "Email already exist")
+      }
       user.email = email;
       const emailVerification = await sendVerificationEmail(email);
       if(!emailVerification){
@@ -232,10 +268,30 @@ const updateUserDetails = async (req, res) => {
     );
     
   } catch (error) {
-    throw new ApiError(500, "Error while updating user details", error);
+    throw new ApiError(500, error.message ||  "Error while updating user details", error);
     
   }
-}
+})
+
+const logout = asyncHandler( async (req, res) => {
+  try {
+    const user = await user_model.findById(req.user._id);
+    if(!user){
+      throw new ApiError(404,  "User not found" );
+    }
+    user.refreshToken = null;
+    await user.save();
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+    return res.status(200).json(
+      new ApiResponse(200, "Logout successfully")
+    );
+
+  } catch (error) {
+    throw new ApiError(500, error.message ||  "Error while logging out", error);
+
+  }
+})
 
 module.exports = {
   signup,
@@ -245,7 +301,8 @@ module.exports = {
   resendEmailVerificationLink,
   refreshToken,
   updatePassword,
-  updateUserDetails
+  updateUserDetails,
+  logout,
 };
 
 

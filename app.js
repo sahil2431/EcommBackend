@@ -5,7 +5,7 @@ const cookieParser = require("cookie-parser")
 const app = express()
 
 //Use to connnect with frontend ports
-app.use(cors)
+app.use(cors())
 
 app.use(express.json())  //sets the limit of json body 
 app.use(express.urlencoded({extended : true}))   //encode the url for spaces

@@ -33,14 +33,19 @@ router.route("/refreshToken").post(
     user_controller.refreshToken
 ),
 
-router.route("/update").put(
+router.route("/update").patch(
     verifyToken,
     user_controller.updateUserDetails
 ),
 
-router.route("/updatePassword").put(
+router.route("/updatePassword").patch(
     verifyToken,
     user_controller.updatePassword
+)
+
+router.route("/logout").post(
+    verifyToken,
+    user_controller.logout
 )
 
 module.exports = router

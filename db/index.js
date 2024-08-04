@@ -20,7 +20,7 @@ const adminCreation = async () =>{
             userId : "admin",
             email : process.env.ADMIN_EMAIL,
             userType : "ADMIN",
-            password : bcrypt.hashSync(process.env.ADMIN_PASSWORD ,8) ,
+            password : process.env.ADMIN_PASSWORD ,
             mobile : process.env.ADMIN_MOBILE,
 
         })

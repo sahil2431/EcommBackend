@@ -7,15 +7,14 @@ const multerMW = require("../middlewares/multer.mw")
 
 const router = Router()
 router.route("/create").post(
-    multerMW.upload.array("file"),
+    multerMW.upload.array("images"),
     authUser.verifyToken,
     authUser.isAdmin,
     productMW.verifyProductBody,
     product_controller.create_product
 )
 
-router.route("/get").get(
-    authUser.verifyToken,
+router.route("/getAllProducts").get(
     product_controller.getAllProducts
 )
 
@@ -30,6 +29,10 @@ router.route("/update").patch(
     authUser.verifyToken,
     authUser.isAdmin,
     product_controller.updateProduct
+)
+
+router.route("/productDetails").post(
+    product_controller.productDetails
 )
 
 module.exports = router;

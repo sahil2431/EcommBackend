@@ -1,6 +1,6 @@
 const {Router} = require("express")
 const user_controller = require("../controllers/user.controller")
-const {verifySignInBody , verifySignUpBody , verifyToken } = require("../middlewares/user.mw")
+const {verifySignInBody , verifySignUpBody , verifyToken, isAdmin } = require("../middlewares/user.mw")
 
 
 const router = Router()
@@ -15,7 +15,7 @@ router.route("/signin").post(
     user_controller.signin
 ),
 
-router.route("/delete").delete(
+router.route("/deleteAccount").delete(
     verifyToken,
     user_controller.deleteUser
 ),
@@ -47,5 +47,20 @@ router.route("/logout").post(
     verifyToken,
     user_controller.logout
 )
+
+router.route("/getCurrentUserDetails").get(
+    verifyToken,
+    user_controller.getCurrentUserDetails
+)
+
+router.route("/getAllUsers").get(
+    verifyToken ,
+    isAdmin,
+    user_controller.getAllUserDetails
+)
+
+router.route("/forgotPassword").post(user_controller.forgotPassword)
+
+router.route("/resetPassword").post(user_controller.resetPassword)
 
 module.exports = router

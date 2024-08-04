@@ -52,14 +52,11 @@ const verifySignInBody =asyncHandler( async (req, res, next) => {
 
 const verifyToken =asyncHandler( async (req, res, next) => {
   try {
-    const accessToken =
-      req.cookies?.accessToken ||
-      req.header("Authorization")?.replace("Bearer ", "");
-
+    
+    const accessToken =  req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
     if (!accessToken) {
       throw new ApiError(401, "Unauthorized");
     }
-    console.log(accessToken);
 
     const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
 

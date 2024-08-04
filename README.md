@@ -18,12 +18,26 @@ This is a Node.js backend application for an ecommerce platform. It provides API
 - **Product Management**
   - Create, read, update, and delete products
   - Search and filter products
-  - Product categories and subcategories
+  - Product categorie
 
 - **Cart Management**
   - Add and remove items from the cart
   - Update cart item quantities
+  - Get All the Cart Items Details
 
+- **Order Management**
+  - Create orders with multiple products
+  - Get All the Order Details with the address and products Details
+
+- **Wishlist Management**
+  - Add , Remove items from the wishlist
+  - Get all wishlisted products
+
+- **Reviews Managemenet**
+  - Add and edit reviews
+  - Get all the reviews of user
+
+  
 - Working on new features......
 
 

@@ -2,33 +2,32 @@ const { ApiError } = require("../utils/ApiError");
 const { ApiResponse } = require("../utils/ApiResponse");
 const categoryModel = require("../models/category.model");
 const product_model = require("../models/product.model");
-const uploadOncloudinary = require("../utils/cloudinary");
+const { uploadOnCloudinary } = require("../utils/cloudinary");
 const { asyncHandler } = require("../utils/asyncHandler");
-const create_product = asyncHandler(async (req, res) => {
-  let imagePath = [];
-  console.log(file);
-  for (let i = 0; i < file.length(); i++) {
-    image.push(file[i].path);
+const mongoose = require("mongoose");
+const create_product = asyncHandler(async (req, res, files) => {
+  let productImage = [];
+  console.log("Images :", req.imagesLocalPath);
+  for (let index = 0; index < req.imagesLocalPath.length; index++) {
+    const element = req.imagesLocalPath[index];
+    console.log(element);
+    productImage.push(await uploadOnCloudinary(element));
   }
 
-  const prodImage = await uploadOncloudinary(imagePath, (err, result) => {
-    if (err) {
-      throw new ApiError(500, "Error while uploading image", err);
-    }
-  });
-
+  console.log(productImage);
   const prod_data = {
     name: req.body.name,
     price: req.body.price,
     description: req.body.description,
     quantityAvailable: req.body.quantityAvailable,
     category: req.body.category,
-    image: prodImage.url,
+    images: productImage.map((image) => image.url),
   };
+  console.log(prod_data);
 
   try {
     const product = await product_model.create(prod_data);
-    const category = await categoryModel.findOne({ name: req.body.category });
+    const category = await categoryModel.findById(req.body.category);
     category.productNumber++;
     await category.save();
     return res
@@ -36,36 +35,20 @@ const create_product = asyncHandler(async (req, res) => {
       .send(new ApiResponse(201, "Product created successfully", product));
   } catch (err) {
     console.log(err);
-    throw new ApiError(500, "Error while creating product", err);
+    throw new ApiError(
+      err.status || 500,
+      err.message || "Error while creating product",
+      err
+    );
   }
 });
 
 const getAllProducts = asyncHandler(async (req, res) => {
-  if (!req.body.category) {
-    throw new ApiError(404, "Category is required", err);
-  }
   try {
-    const category = await categoryModel.findOne({ name: req.body.category });
-    if (!category) {
-      throw new ApiError(404, "Category is not found", err);
-    }
-    const prod = await product_model.find({
-      category: req.body.category,
-      quantityAvailable: { $gt: 0 },
-    });
-    if (prod.length == 0) {
+    const products = await product_model.find();
+    if (products.length == 0) {
       throw new ApiError(404, "No products found", err);
     }
-    const products = [];
-    for (let index = 0; index < prod.length; index++) {
-      products.push({
-        name: prod[index].name,
-        price: prod[index].price,
-        category: prod[index].category,
-        quantityAvailable: prod[index].quantityAvailable,
-      });
-    }
-
     return res
       .status(200)
       .send(new ApiResponse(200, "Products fetched successfully", products));
@@ -128,9 +111,130 @@ const updateProduct = asyncHandler(async (req, res) => {
   }
 });
 
+const productDetails = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.body?.userId;
+    const productId = req.body?.productId;
+
+    const productDetails = await product_model.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(productId),
+        },
+      },
+      {
+        $lookup: {
+          from: "carts",
+          localField: "_id",
+          foreignField: "productId",
+          as: "cart",
+        },
+      },
+      {
+        $addFields: {
+          isAddedToCart: {
+            $cond: {
+              if: { $in: [new mongoose.Types.ObjectId(userId) , "$cart.userId"] },
+              then: true,
+              else: false,
+            },
+          },
+        },
+      },
+      {
+        $lookup : {
+          from : "reviews",
+          localField : "_id",
+          foreignField : "reviewdProduct",
+          as : "reviews",
+          pipeline : [
+            {
+              $lookup : {
+                from : "users" , 
+                localField : "reviewdBy" ,
+                foreignField : "_id" ,
+                as : "reviewdBy",
+                pipeline : [
+                  {
+                    $project : {
+                      _id : 1,
+                      userId : 1,
+                      name : 1,
+                      email : 1,
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              $project : {
+                product : 0,
+              }
+            }
+          ]
+        }
+      },
+      {
+        $lookup : {
+          from : "wishlists" ,
+          localField : "_id" ,
+          foreignField : "wishlistedProduct" ,
+          as : "wishlists" ,
+        }
+      },
+      {
+        $addFields : {
+          isWishlisted : {
+            $cond : {
+              if : { $in : [new mongoose.Types.ObjectId(userId) , '$wishlists.wishlistBy']} ,
+              then : true ,
+              else : false ,
+            }
+          }
+        }
+      },
+      
+      {
+        $project : {
+          _id : 1,
+          name : 1,
+          price : 1,
+          quantityAvailable : 1,
+          category : 1,
+          images : 1,
+          isAddedToCart : 1,
+          isWishlisted : 1,
+          reviews : 1,
+        }
+      }
+      
+    ]);
+
+    if (!productDetails?.length) {
+      throw new ApiError(404, "No product found");
+    }
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          "Product details fetched successfully",
+          productDetails[0]
+        )
+      );
+  } catch (error) {
+    throw new ApiError(
+      error.status || 500,
+      error.message || "Error while fetching product details",
+      error
+    );
+  }
+});
 module.exports = {
   create_product,
   getAllProducts,
   deleteProduct,
   updateProduct,
+  productDetails,
 };

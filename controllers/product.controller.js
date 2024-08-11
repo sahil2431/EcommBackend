@@ -5,6 +5,7 @@ const product_model = require("../models/product.model");
 const { uploadOnCloudinary } = require("../utils/cloudinary");
 const { asyncHandler } = require("../utils/asyncHandler");
 const mongoose = require("mongoose");
+
 const create_product = asyncHandler(async (req, res, files) => {
   let productImage = [];
   console.log("Images :", req.imagesLocalPath);
@@ -47,7 +48,7 @@ const getAllProducts = asyncHandler(async (req, res) => {
   try {
     const products = await product_model.find();
     if (products.length == 0) {
-      throw new ApiError(404, "No products found", err);
+      throw new ApiError(404, "No products found");
     }
     return res
       .status(200)
@@ -99,8 +100,8 @@ const updateProduct = asyncHandler(async (req, res) => {
       product.quantityAvailable = req.body.quantityAvailable;
     }
     await product.save();
-
-    const updateProduct = await product_model.findOne({ name: req.body.name });
+    
+    const updatedProduct = await product_model.findOne({ name: req.body.name });
     return res
       .status(202)
       .json(
@@ -231,10 +232,76 @@ const productDetails = asyncHandler(async (req, res) => {
     );
   }
 });
+
+const searchProductBysearch = asyncHandler(async (req , res) => {
+  const {search} = req.body
+  if(!req.body) {
+    return res.status(400).json(new ApiResponse(400 , "Body is required"))
+  }
+  try{
+    const products = await product_model.find( {name : { $regex : search , $options : 'i'}})
+    
+     if(!products) {
+       return res.status(404).json(new ApiResponse(404 , "No product found"))
+     }
+      
+     return res.status(200).json( new ApiResponse(200 , "Product fetched" , products))
+
+  }catch(err) {
+    throw new ApiError(500 , err.message || "Error while searching product" , err) 
+  }
+})
+
+const getProductByCategory = asyncHandler(async (req , res) => {
+  const {categoryId} = req.body
+  if(!req.body) {
+    return res.status(400).json(new ApiResponse(400 , "Body is required"))
+  }
+  try{
+    const products = await product_model.find({category : categoryId})
+    if(!products) {
+      return res.status(404).json(new ApiResponse(404 , "No product found"))
+    }
+    return res.status(200).json(new ApiResponse(200 , "Product fetched" , products))
+  }catch(err) {
+    throw new ApiError(500 , err.message || "Error while fetching product" , err)
+  }
+})
+
+const filterProducts = asyncHandler(async (req, res) => {
+  const { categoryId, price, availability, rating } = req.body;
+  let products = [];
+  try {
+    if (categoryId) {
+      products = await product_model.find({ category: categoryId });
+    } else {
+      products = await product_model.find();
+    }
+    if (products.length === 0) {
+      return res.status(404).json(new ApiResponse(404, "Product not found"));
+    }
+    if (typeof price === 'object' && price !== null && Object.keys(price).length !== 0) {
+      products = products.filter(product => product.price <= price.max && product.price >= price.min);
+    }
+    if (availability) {
+      products = products.filter(product => product.quantityAvailable > 0);
+    }
+    if (typeof rating === 'object' && rating !== null && Object.keys(rating).length !== 0) {
+      products = products.filter(product => product.rating.averageRating >= rating.min && product.rating.averageRating <= rating.max);
+    }
+    return res.status(200).json(new ApiResponse(200, "Product fetched", products));
+  } catch (err) {
+    throw new ApiError(500, err.message || "Error while fetching product", err);
+  }
+});
+
 module.exports = {
   create_product,
   getAllProducts,
   deleteProduct,
   updateProduct,
   productDetails,
+  searchProductBysearch,
+  getProductByCategory,
+  filterProducts
 };

@@ -26,6 +26,7 @@ const orderRouter = require("./routes/order.routes")
 const wishlistRouter = require("./routes/wishlist.routes")
 const reviewRouter = require("./routes/review.routes")
 const addressRouter = require("./routes/address.routes")
+const paymentRouter = require("./routes/payment.routes")
 
 app.use("/ecomm/api/v1/users", userRouter)
 app.use("/ecomm/api/v1/category", categoryRouter)
@@ -35,6 +36,6 @@ app.use("/ecomm/api/v1/order", orderRouter)
 app.use("/ecomm/api/v1/wishlist", wishlistRouter)
 app.use("/ecomm/api/v1/review" , reviewRouter)
 app.use("/ecomm/api/v1/address" , addressRouter)
-
+app.use("/ecomm/api/v1/payment", paymentRouter)
 
 module.exports = {app}

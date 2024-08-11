@@ -56,7 +56,7 @@ const deleteAddress = asyncHandler( async (req , res) => {
         )
     })
     .catch((err) => {
-        throw new ApiError(500 , "Error in deleting the address")
+        throw new ApiError(500 ,err.message || "Error in deleting the address")
     })
 })
 

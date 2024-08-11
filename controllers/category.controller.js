@@ -31,16 +31,10 @@ const createNewCategory = asyncHandler(async (req, res) => {
 const getAllcatgories = asyncHandler(async (req, res) => {
   try {
     const categories = await category_model.find();
-    const cat = [];
-    for (let index = 0; index < categories.length; index++) {
-      cat.push({
-        name: categories[index].name,
-        numberOfProducts: categories[index].productNumber,
-      });
-    }
+    
     return res
       .status(200)
-      .send(new ApiResponse(200, "Categories fetched successfully", cat));
+      .send(new ApiResponse(200, "Categories fetched successfully", categories));
   } catch (err) {
     throw new ApiError(500, "Error while fetching categories", err);
   }

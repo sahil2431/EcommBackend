@@ -37,7 +37,12 @@ const orderSchema = new mongoose.Schema({
     totalValue : {
         type : Number ,
         required : true
-    } 
+    } ,
+    paymentId : {
+        type : mongoose.Schema.Types.ObjectId,
+        ref : "Payment"
+    }
+    
 } , {timestamps : true , versionKey: false  })
 
 module.exports = mongoose.model("Order" , orderSchema)

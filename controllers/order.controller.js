@@ -7,7 +7,7 @@ const { asyncHandler } = require("../utils/asyncHandler");
 const { mongo, default: mongoose } = require("mongoose");
 
 const confirmOrder = asyncHandler(async (req, res) => {
-  const { addressId } = req.body;
+  const { addressId , paymentId } = req.body;
   const userId = req.user._id;
 
   try {
@@ -40,6 +40,8 @@ const confirmOrder = asyncHandler(async (req, res) => {
       address: addressId,
       products: orderedProducts,
       totalValue: totalValue,
+      paymentId : paymentId
+      
     });
     await cartModel.deleteMany({ userId: userId });
     return res

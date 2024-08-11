@@ -13,7 +13,6 @@ router.route("/create").post(
 )
 
 router.route("/get").get(
-    authUser.verifyToken,
     category_controller.getAllcatgories
 )
 
@@ -23,6 +22,7 @@ router.route("/delete").delete(
     categoryMW.verifyCategoryDeleteBody,
     category_controller.deleteCategory
 )
+
 
 
 module.exports = router

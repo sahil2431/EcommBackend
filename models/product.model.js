@@ -28,6 +28,12 @@ const product_schema = new mongoose.Schema({
         required : true
     } ,
 
+    rating : {
+        total  : {type : Number , default : 0},
+        numberOfRatings : {type : Number , default : 0},
+        averageRating : {type : Number , default : 0}
+    },
+
     images : [{
         type : String
     }]

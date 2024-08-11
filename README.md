@@ -37,6 +37,9 @@ This is a Node.js backend application for an ecommerce platform. It provides API
   - Add and edit reviews
   - Get all the reviews of user
 
+- **Payment Management**
+  - Razorpay payment gateway added for smooth transaction
+  - Payment details are saved in database
   
 - Working on new features......
 

@@ -3,6 +3,7 @@ const reviewsModel = require("../models/reviews.models");
 const { ApiError } = require("../utils/ApiError");
 const { ApiResponse } = require("../utils/ApiResponse");
 const { asyncHandler } = require("../utils/asyncHandler");
+const productModel = require("../models/product.model");
 
 const addReview = asyncHandler(async (req, res) => {
   const { rating, review, productId } = req.body;
@@ -22,6 +23,11 @@ const addReview = asyncHandler(async (req, res) => {
       review: review,
     });
 
+    const product = await productModel.findById(productId);
+    product.rating.total += rating;
+    product.rating.numberOfRatings ++;
+    product.rating.averageRating = product.rating.total / product.rating.numberOfRatings;
+    await product.save();
     return res
       .status(200)
       .json(new ApiResponse(200, "Review created succesfully ", reviewProduct));

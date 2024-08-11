@@ -35,4 +35,10 @@ router.route("/productDetails").post(
     product_controller.productDetails
 )
 
+router.route("/filterProducts").post(product_controller.filterProducts)
+
+router.route("/getProductByCategory").post(product_controller.getProductByCategory)
+
+router.route("/search").post(product_controller.searchProductBysearch)
+
 module.exports = router;

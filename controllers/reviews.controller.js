@@ -7,12 +7,14 @@ const productModel = require("../models/product.model");
 
 const addReview = asyncHandler(async (req, res) => {
   const { rating, review, productId } = req.body;
+  console.log(req.body);
   const user = req.user;
+  console.log(user);
   if (!rating && !review && productId) {
     return res.status(400).json( new ApiResponse(400 , "All fields are required"))
   }
   try {
-    const isAlreadyReviewed = await reviewsModel.findOne({reviewdBy : user._id})
+    const isAlreadyReviewed = await reviewsModel.findOne({reviewdBy : user._id , reviewdProduct : productId})
     if(isAlreadyReviewed) {
       return res.status(400).json( new ApiResponse(400 , "You have already reviewed the product"))
     }

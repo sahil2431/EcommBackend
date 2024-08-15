@@ -24,7 +24,6 @@ const createOrder = asyncHandler(async (req, res) => {
         if(!order) {
             return res.status(500).json(new ApiResponse(500, "Internal server error"));
         }
-        console.log(order)
         return res.status(200).json(new ApiResponse(200, "Order created successfully", order));
     } catch (error) {
         throw new ApiError(500, error.message || "Internal server error");

@@ -2,9 +2,8 @@ const { ApiError } = require("../utils/ApiError");
 const { ApiResponse } = require("../utils/ApiResponse");
 const user_model = require("../models/user.model");
 const jwt = require("jsonwebtoken");
-const { sendVerificationEmail, sendEmailForForgotPassword } = require("../utils/sendVerificationLink");
+const { sendVerificationEmail, sendEmailForForgotPassword , sendMessageToAdmin } = require("../utils/email");
 const { asyncHandler } = require("../utils/asyncHandler");
-const { get } = require("mongoose");
 
 const signup = asyncHandler(async (req, res) => {
   const request_body = req.body;
@@ -416,6 +415,28 @@ const resetPassword = asyncHandler(async (req , res) => {
       error)
   }
 })
+
+const contactAdmin = asyncHandler(async (req , res) => {
+  const {name , email , message} = req.body;
+  if(!name || !email || !message) {
+    return res.status(400).json(new ApiResponse(400, "All fields are required"))
+  }
+
+  try {
+    const sendEmail = await sendMessageToAdmin(name , email , message)
+    if(!sendEmail) {
+      throw new ApiError(500, "Error while sending email")
+    }
+
+    return res.status(200).json(new ApiResponse(200, "Email sent successfully"))
+  } catch (error) {
+    throw new ApiError(
+      error.status || 500,
+      error.message || "Error while sending email",
+      error)
+    
+  }
+})
 module.exports = {
   signup,
   signin,
@@ -429,5 +450,6 @@ module.exports = {
   getCurrentUserDetails,
   getAllUserDetails,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  contactAdmin
 };

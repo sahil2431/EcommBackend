@@ -1,7 +1,7 @@
 
 const jwt = require("jsonwebtoken")
 const nodemailer = require('nodemailer');
-const {ApiError} = require("../utils/ApiError");
+const {ApiError} = require("./ApiError");
 
 const sendmail = async(transporter , mailOptions) => {
     try{
@@ -83,6 +83,37 @@ exports.sendEmailForForgotPassword = async(email) => {
             to : email,
             subject : 'Reset your password',
             text : `Please click on the following link to reset your password: http://localhost:${process.env.FRONTEND_PORT}/resetPassword/${token}`
+        }
+
+        const status = await sendmail(transporter , mailOptions)
+        if(!status){
+          throw new ApiError(500, "Error while sending email")
+        }
+        return true
+    } catch (error) {
+        throw new ApiError(500, "Error while sending email", error)
+    }
+}
+
+exports.sendMessageToAdmin = async(name ,email , message) => {
+    try {
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            host : process.env.SMTP_HOST,
+            port: process.env.SMTP_PORT,
+            secure : false,
+            requireTLS : true,
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.APP_PASSWORD
+            }
+        })
+
+        const mailOptions = {
+            from : email,
+            to : process.env.ADMIN_EMAIL,
+            subject : `Message from ${name} (${email})`,
+            text : message
         }
 
         const status = await sendmail(transporter , mailOptions)

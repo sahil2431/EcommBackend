@@ -63,4 +63,6 @@ router.route("/forgotPassword").post(user_controller.forgotPassword)
 
 router.route("/resetPassword").post(user_controller.resetPassword)
 
+router.route("/contactUs").post(user_controller.contactAdmin)
+
 module.exports = router

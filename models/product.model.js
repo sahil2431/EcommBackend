@@ -31,7 +31,7 @@ const product_schema = new mongoose.Schema({
     rating : {
         total  : {type : Number , default : 0},
         numberOfRatings : {type : Number , default : 0},
-        averageRating : {type : Number , default : 0}
+        averageRating : {type: mongoose.Schema.Types.Decimal128, default: 0.0}
     },
 
     images : [{

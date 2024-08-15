@@ -200,16 +200,19 @@ const productDetails = asyncHandler(async (req, res) => {
           _id : 1,
           name : 1,
           price : 1,
+          description : 1,
           quantityAvailable : 1,
           category : 1,
           images : 1,
           isAddedToCart : 1,
           isWishlisted : 1,
           reviews : 1,
+          rating : 1,
         }
       }
       
     ]);
+
 
     if (!productDetails?.length) {
       throw new ApiError(404, "No product found");

@@ -28,6 +28,9 @@ const reviewRouter = require("./routes/review.routes")
 const addressRouter = require("./routes/address.routes")
 const paymentRouter = require("./routes/payment.routes")
 
+app.get("/" , (req , res ) => {
+    res.json({message : "VirtuMart backend deployed!"})
+})
 app.use("/ecomm/api/v1/users", userRouter)
 app.use("/ecomm/api/v1/category", categoryRouter)
 app.use("/ecomm/api/v1/product", productRouter)

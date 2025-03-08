@@ -5,8 +5,14 @@ const app = express()
 
 
 //Use to connnect with frontend ports
+const allowedDomains = process.env.CORS_ORIGIN.split(',');
 app.use(cors({
-    origin : process.env.CORS_ORIGIN,
+    origin: function (origin, callback) {
+    if (allowedDomains.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'), false);
+    }
     credentials : true,
 }))
 

@@ -8,14 +8,15 @@ const app = express()
 const allowedDomains = process.env.CORS_ORIGIN.split(',');
 console.log(allowedDomains);
 app.use(cors({
-    origin: function (origin, callback) {
+  origin: function (origin, callback) {
     if (allowedDomains.indexOf(origin) !== -1 || !origin) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'), false);
     }
+  },
     credentials : true,
-}}))
+}))
 
 app.use(express.json())  //sets the limit of json body 
 app.use(express.urlencoded({extended : true}))   //encode the url for spaces
